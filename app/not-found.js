@@ -1,0 +1,1 @@
+import Link from 'next/link';export default function NotFound(){return <div className="prose center-heading"><p className="eyebrow">404</p><h1>This scent has drifted away</h1><p>The page you are looking for cannot be found.</p><Link className="button" href="/shop">Explore perfumes</Link></div>}

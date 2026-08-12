@@ -1,0 +1,1 @@
+import {Suspense} from 'react';import ShopClient from './shop-client';export const metadata={title:'Shop Perfumes',description:'Shop women’s, men’s and unisex fragrances from Sentique Perfumes.'};export default function Shop(){return <Suspense><ShopClient/></Suspense>}
