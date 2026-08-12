@@ -1,0 +1,1 @@
+import ProductCard from './ProductCard';export default function ProductGrid({products}){return products.length?<div className="product-grid">{products.map(p=><ProductCard key={p.id} product={p}/>)}</div>:<div className="no-results"><h3>No fragrances found</h3><p>Try changing your filters or search.</p></div>}
