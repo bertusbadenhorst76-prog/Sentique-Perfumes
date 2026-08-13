@@ -5,21 +5,47 @@ import {money,whatsappUrl} from '@/data/settings';
 
 const DELIVERY_FEE=120;
 const FREE_DELIVERY_MINIMUM=2000;
+const PROMOTION_CODE='SENTIQUE10';
+const PROMOTION_PERCENT=10;
 
 export default function ShoppingCart(){
   const {items,open,setOpen,change,remove}=useCart();
   const [paying,setPaying]=useState(false);
   const [paymentError,setPaymentError]=useState('');
   const [deliveryMethod,setDeliveryMethod]=useState('delivery');
+  const [promoInput,setPromoInput]=useState('');
+  const [promoCode,setPromoCode]=useState('');
+  const [promoMessage,setPromoMessage]=useState('');
   const subtotal=items.reduce((sum,item)=>sum+(item.salePrice||item.price)*item.qty,0);
   const qualifiesForFreeDelivery=subtotal>=FREE_DELIVERY_MINIMUM;
   const deliveryFee=deliveryMethod==='collection'||qualifiesForFreeDelivery?0:DELIVERY_FEE;
-  const total=subtotal+deliveryFee;
+  const discount=promoCode===PROMOTION_CODE?Math.round(subtotal*PROMOTION_PERCENT)/100:0;
+  const total=Math.max(0,subtotal-discount+deliveryFee);
   const deliveryLabel=deliveryMethod==='collection'?'Collection':qualifiesForFreeDelivery?'Free delivery':'Standard delivery';
+
+  const applyPromotion=(event)=>{
+    event.preventDefault();
+    const code=promoInput.trim().toUpperCase();
+    if(code===PROMOTION_CODE){
+      setPromoCode(PROMOTION_CODE);
+      setPromoInput(PROMOTION_CODE);
+      setPromoMessage(`${PROMOTION_PERCENT}% discount applied.`);
+    }else{
+      setPromoCode('');
+      setPromoMessage('This promotion code is not valid.');
+    }
+  };
+
+  const removePromotion=()=>{
+    setPromoCode('');
+    setPromoInput('');
+    setPromoMessage('');
+  };
 
   const whatsappCheckout=()=>{
     const lines=items.map(item=>`${item.qty} x ${item.name} – ${money(item.salePrice||item.price)}${item.qty>1?' each':''}`).join('\n');
-    window.open(whatsappUrl(`Hi Sentique Perfumes. I would like to order:\n\n${lines}\n\nSubtotal: ${money(subtotal)}\n${deliveryLabel}: ${money(deliveryFee)}\nTotal: ${money(total)}\n\nPlease confirm availability and ${deliveryMethod==='collection'?'collection arrangements':'delivery'}.`),'_blank');
+    const promotionLine=promoCode?`\nPromotion (${promoCode}): -${money(discount)}`:'';
+    window.open(whatsappUrl(`Hi Sentique Perfumes. I would like to order:\n\n${lines}\n\nSubtotal: ${money(subtotal)}${promotionLine}\n${deliveryLabel}: ${money(deliveryFee)}\nTotal: ${money(total)}\n\nPlease confirm availability and ${deliveryMethod==='collection'?'collection arrangements':'delivery'}.`),'_blank');
   };
 
   const yocoCheckout=async()=>{
@@ -31,7 +57,8 @@ export default function ShoppingCart(){
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           items:items.map(item=>({id:item.id,qty:item.qty})),
-          deliveryMethod
+          deliveryMethod,
+          promotionCode:promoCode
         })
       });
       const result=await response.json();
@@ -66,8 +93,18 @@ export default function ShoppingCart(){
             <strong>{money(0)}</strong>
           </label>
         </fieldset>
+        <section className="promotion">
+          <b>Promotion code</b>
+          <form onSubmit={applyPromotion}>
+            <input type="text" value={promoInput} onChange={event=>setPromoInput(event.target.value.toUpperCase())} placeholder="Enter discount code" aria-label="Promotion code"/>
+            <button type="submit">{promoCode?'Applied':'Apply'}</button>
+          </form>
+          {promoMessage&&<small className={promoCode?'promo-success':'promo-error'}>{promoMessage}</small>}
+          {promoCode&&<button className="promo-remove" type="button" onClick={removePromotion}>Remove code</button>}
+        </section>
         <div className="totals">
           <span>Subtotal</span><b>{money(subtotal)}</b>
+          {promoCode&&<><span>Promotion ({promoCode})</span><b>−{money(discount)}</b></>}
           <span>{deliveryLabel}</span><b>{money(deliveryFee)}</b>
           <span className="grand-total">Total</span><b className="grand-total">{money(total)}</b>
         </div>
