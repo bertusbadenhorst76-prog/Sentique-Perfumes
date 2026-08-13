@@ -117,3 +117,8 @@
   .header-nav{top:auto}
   .header-nav a{min-height:36px;padding:.5rem .68rem;font-size:.64rem}
 }
+
+
+/* Yoco checkout ----------------------------------------------------------- */
+.cart .button.wide{margin-top:.65rem}
+.payment-error{margin:.55rem 0 0;color:#9b3f35;font-size:.75rem;text-align:center}
