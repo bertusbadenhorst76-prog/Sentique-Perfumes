@@ -11,6 +11,7 @@ const links=[
   ['Men','/shop?category=Men'],
   ['Unisex','/shop?category=Unisex'],
   ['New Arrivals','/shop?special=new'],
+  ['Budget Perfumes','/shop?special=budget'],
   ['Best Sellers','/shop?special=best'],
   ['About Us','/#about'],
   ['Contact','/contact']
