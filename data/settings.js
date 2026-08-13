@@ -1,6 +1,6 @@
 // SAFE TO EDIT: Update your contact details and social links here.
 export const settings={
-  whatsappNumber:'27XXXXXXXXX',
+  whatsappNumber:'27825661533',
   telephone:'+27 00 000 0000',
   email:'hello@sentiqueperfumes.co.za',
   instagram:'https://www.instagram.com/scent_iqueperfumes',
