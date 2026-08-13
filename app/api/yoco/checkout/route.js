@@ -3,6 +3,9 @@ import {products} from '@/data/products';
 
 export const runtime='nodejs';
 
+const DELIVERY_FEE=120;
+const FREE_DELIVERY_MINIMUM=2000;
+
 export async function POST(request){
   try{
     if(!process.env.YOCO_SECRET_KEY){
@@ -11,6 +14,7 @@ export async function POST(request){
 
     const body=await request.json();
     const requested=Array.isArray(body.items)?body.items:[];
+    const deliveryMethod=body.deliveryMethod==='collection'?'collection':'delivery';
     if(!requested.length){
       return NextResponse.json({error:'Your cart is empty.'},{status:400});
     }
@@ -25,7 +29,11 @@ export async function POST(request){
       return {id:product.id,name:product.name,quantity,unitPrice};
     });
 
-    const amount=orderItems.reduce((sum,item)=>sum+item.unitPrice*item.quantity,0)*100;
+    const subtotal=orderItems.reduce((sum,item)=>sum+item.unitPrice*item.quantity,0);
+    const qualifiesForFreeDelivery=subtotal>=FREE_DELIVERY_MINIMUM;
+    const deliveryFee=deliveryMethod==='collection'||qualifiesForFreeDelivery?0:DELIVERY_FEE;
+    const deliveryLabel=deliveryMethod==='collection'?'Collection':qualifiesForFreeDelivery?'Free delivery':'Standard delivery';
+    const amount=(subtotal+deliveryFee)*100;
     const orderId=crypto.randomUUID();
     const origin=new URL(request.url).origin;
     const response=await fetch('https://payments.yoco.com/api/checkouts',{
@@ -43,7 +51,10 @@ export async function POST(request){
         failureUrl:`${origin}/shop?payment=failed`,
         metadata:{
           orderId,
-          items:orderItems.map(item=>`${item.quantity}x ${item.name}`).join(', ').slice(0,500)
+          items:orderItems.map(item=>`${item.quantity}x ${item.name}`).join(', ').slice(0,500),
+          deliveryMethod,
+          deliveryLabel,
+          deliveryFee:String(deliveryFee)
         }
       }),
       cache:'no-store'

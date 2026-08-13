@@ -122,3 +122,15 @@
 /* Yoco checkout ----------------------------------------------------------- */
 .cart .button.wide{margin-top:.65rem}
 .payment-error{margin:.55rem 0 0;color:#9b3f35;font-size:.75rem;text-align:center}
+
+
+/* Cart delivery options --------------------------------------------------- */
+.delivery-options{border:0;margin:1rem 0 0;padding:0}
+.delivery-options legend{font:600 .78rem 'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.55rem}
+.delivery-options label{display:grid;grid-template-columns:auto 1fr auto;gap:.7rem;align-items:center;padding:.8rem;margin:.5rem 0;border:1px solid var(--soft-rose-gold);background:var(--white);cursor:pointer;border-radius:3px}
+.delivery-options label.selected{border-color:var(--deep-sage);box-shadow:0 0 0 1px var(--deep-sage)}
+.delivery-options input{accent-color:var(--deep-sage)}
+.delivery-options span{display:grid}
+.delivery-options small{color:var(--warm-grey);font-size:.68rem}
+.delivery-options strong{font-size:.78rem}
+.totals .grand-total{border-top:1px solid var(--soft-rose-gold);padding-top:.6rem;margin-top:.15rem;font-size:1rem}
