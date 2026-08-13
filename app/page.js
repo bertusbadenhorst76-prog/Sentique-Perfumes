@@ -1,5 +1,5 @@
 import Link from 'next/link';import ProductGrid from '@/components/ProductGrid';import {products} from '@/data/products';
-const cats=[['Women’s Perfumes','Women','womens-perfume-final.jpg'],['Men’s Perfumes','Men','mens-perfume-final.jpg'],['Unisex Perfumes','Unisex','unisex-perfume.jpg'],['New Arrivals','new','new-arrivals-perfume.jpg'],['Perfumes Under R500','budget','budget-perfumes-final.jpg']];
+const cats=[['Women’s Perfumes','Women','womens-perfume-final.jpg'],['Men’s Perfumes','Men','mens-perfume-final.jpg'],['Unisex Perfumes','Unisex','unisex-perfume.jpg'],['New Arrivals','new','new-arrivals-perfume.jpg'],['Budget Perfumes','budget','budget-perfumes-final.jpg']];
 const featuredBrands=['Lattafa','Maison Asrar','Paris Corner','Khadlaj','Rayhaan','Zimaya','Armaf','Fragrance World','Pendora Scents','Maison Alhambra','French Avenue','Gulf Orchid'];
 export default function Home(){return <>
  <section className="hero"><div className="hero-copy"><p className="eyebrow">Authentic Dubai Perfumes</p><h1>Find Your<br/><em>Signature Scent</em></h1><p>Discover beautiful fragrances carefully selected to make every moment unforgettable.</p></div><div className="hero-visual"><img src="/images/logo/Hero%20image%203.png" alt="Sentique Perfumes hero artwork"/></div></section>
