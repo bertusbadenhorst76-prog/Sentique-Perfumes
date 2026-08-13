@@ -3,7 +3,7 @@ export const settings={
   whatsappNumber:'27XXXXXXXXX',
   telephone:'+27 00 000 0000',
   email:'hello@sentiqueperfumes.co.za',
-  instagram:'https://instagram.com/',
+  instagram:'https://www.instagram.com/scent_iqueperfumes',
   tiktok:'https://www.tiktok.com/@scent_iqueperfumes',
   hours:'Monday–Friday, 09:00–17:00 · Saturday, 09:00–13:00'
 };
