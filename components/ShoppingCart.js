@@ -108,6 +108,7 @@ export default function ShoppingCart(){
           <span>{deliveryLabel}</span><b>{money(deliveryFee)}</b>
           <span className="grand-total">Total</span><b className="grand-total">{money(total)}</b>
         </div>
+        <button className="button ghost wide" type="button" onClick={()=>setOpen(false)}>Continue Shopping</button>
         <button className="button wide" onClick={yocoCheckout} disabled={paying}>{paying?'Opening secure payment…':'Pay securely with Yoco'}</button>
         {paymentError&&<p className="payment-error">{paymentError}</p>}
         <button className="button whatsapp wide" onClick={whatsappCheckout}>Order via WhatsApp</button>
