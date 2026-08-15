@@ -18,8 +18,29 @@ export async function POST(request){
     const requested=Array.isArray(body.items)?body.items:[];
     const deliveryMethod=body.deliveryMethod==='collection'?'collection':'delivery';
     const requestedPromotion=String(body.promotionCode||'').trim().toUpperCase();
+    const sourceCustomer=body.customer&&typeof body.customer==='object'?body.customer:{};
+    const clean=(value,max=160)=>String(value||'').trim().slice(0,max);
+    const customer={
+      fullName:clean(sourceCustomer.fullName),
+      email:clean(sourceCustomer.email),
+      telephone:clean(sourceCustomer.telephone,40),
+      addressLine1:clean(sourceCustomer.addressLine1),
+      suburb:clean(sourceCustomer.suburb,80),
+      city:clean(sourceCustomer.city,80),
+      province:clean(sourceCustomer.province,80),
+      postalCode:clean(sourceCustomer.postalCode,20)
+    };
     if(!requested.length){
       return NextResponse.json({error:'Your cart is empty.'},{status:400});
+    }
+    if(!customer.fullName||!customer.email||!customer.telephone){
+      return NextResponse.json({error:'Please enter your full name, email address and telephone number.'},{status:400});
+    }
+    if(!/^\S+@\S+\.\S+$/.test(customer.email)){
+      return NextResponse.json({error:'Please enter a valid email address.'},{status:400});
+    }
+    if(deliveryMethod==='delivery'&&(!customer.addressLine1||!customer.suburb||!customer.city||!customer.province||!customer.postalCode)){
+      return NextResponse.json({error:'Please complete your delivery address.'},{status:400});
     }
 
     const orderItems=requested.map(({id,qty})=>{
@@ -41,6 +62,7 @@ export async function POST(request){
     const qualifiesForFreeDelivery=subtotal>=FREE_DELIVERY_MINIMUM;
     const deliveryFee=deliveryMethod==='collection'||qualifiesForFreeDelivery?0:DELIVERY_FEE;
     const deliveryLabel=deliveryMethod==='collection'?'Collection':qualifiesForFreeDelivery?'Free delivery':'Standard delivery';
+    const deliveryAddress=deliveryMethod==='delivery'?[customer.addressLine1,customer.suburb,customer.city,customer.province,customer.postalCode].join(', '):'Collection';
     const amount=Math.round((subtotal-discount+deliveryFee)*100);
     const orderId=crypto.randomUUID();
     const origin=new URL(request.url).origin;
@@ -59,6 +81,10 @@ export async function POST(request){
         failureUrl:`${origin}/shop?payment=failed`,
         metadata:{
           orderId,
+          customerName:customer.fullName,
+          customerEmail:customer.email,
+          customerTelephone:customer.telephone,
+          deliveryAddress:deliveryAddress.slice(0,500),
           items:orderItems.map(item=>`${item.quantity}x ${item.name}`).join(', ').slice(0,500),
           deliveryMethod,
           deliveryLabel,

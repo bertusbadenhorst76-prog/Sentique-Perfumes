@@ -16,12 +16,28 @@ export default function ShoppingCart(){
   const [promoInput,setPromoInput]=useState('');
   const [promoCode,setPromoCode]=useState('');
   const [promoMessage,setPromoMessage]=useState('');
+  const [customer,setCustomer]=useState({fullName:'',email:'',telephone:'',addressLine1:'',suburb:'',city:'',province:'',postalCode:''});
+  const [customerError,setCustomerError]=useState('');
   const subtotal=items.reduce((sum,item)=>sum+(item.salePrice||item.price)*item.qty,0);
   const qualifiesForFreeDelivery=subtotal>=FREE_DELIVERY_MINIMUM;
   const deliveryFee=deliveryMethod==='collection'||qualifiesForFreeDelivery?0:DELIVERY_FEE;
   const discount=promoCode===PROMOTION_CODE?Math.round(subtotal*PROMOTION_PERCENT)/100:0;
   const total=Math.max(0,subtotal-discount+deliveryFee);
   const deliveryLabel=deliveryMethod==='collection'?'Collection':qualifiesForFreeDelivery?'Free delivery':'Standard delivery';
+
+  const updateCustomer=(field,value)=>{
+    setCustomer(current=>({...current,[field]:value}));
+    setCustomerError('');
+  };
+
+  const validateCustomer=()=>{
+    if(!customer.fullName.trim()||!customer.email.trim()||!customer.telephone.trim()) return 'Please enter your full name, email address and telephone number.';
+    if(!/^\S+@\S+\.\S+$/.test(customer.email.trim())) return 'Please enter a valid email address.';
+    if(deliveryMethod==='delivery'&&(!customer.addressLine1.trim()||!customer.suburb.trim()||!customer.city.trim()||!customer.province.trim()||!customer.postalCode.trim())) return 'Please complete your delivery address.';
+    return '';
+  };
+
+  const customerDetails={...customer,fullName:customer.fullName.trim(),email:customer.email.trim(),telephone:customer.telephone.trim(),addressLine1:customer.addressLine1.trim(),suburb:customer.suburb.trim(),city:customer.city.trim(),province:customer.province.trim(),postalCode:customer.postalCode.trim()};
 
   const applyPromotion=(event)=>{
     event.preventDefault();
@@ -43,12 +59,17 @@ export default function ShoppingCart(){
   };
 
   const whatsappCheckout=()=>{
+    const validationError=validateCustomer();
+    if(validationError){setCustomerError(validationError);return;}
     const lines=items.map(item=>`${item.qty} x ${item.name} – ${money(item.salePrice||item.price)}${item.qty>1?' each':''}`).join('\n');
     const promotionLine=promoCode?`\nPromotion (${promoCode}): -${money(discount)}`:'';
-    window.open(whatsappUrl(`Hi Sentique Perfumes. I would like to order:\n\n${lines}\n\nSubtotal: ${money(subtotal)}${promotionLine}\n${deliveryLabel}: ${money(deliveryFee)}\nTotal: ${money(total)}\n\nPlease confirm availability and ${deliveryMethod==='collection'?'collection arrangements':'delivery'}.`),'_blank');
+    const addressLine=deliveryMethod==='delivery'?`\nDelivery address: ${customerDetails.addressLine1}, ${customerDetails.suburb}, ${customerDetails.city}, ${customerDetails.province}, ${customerDetails.postalCode}`:'\nDelivery method: Collection';
+    window.open(whatsappUrl(`Hi Sentique Perfumes. I would like to order:\n\nCustomer: ${customerDetails.fullName}\nEmail: ${customerDetails.email}\nTelephone: ${customerDetails.telephone}${addressLine}\n\n${lines}\n\nSubtotal: ${money(subtotal)}${promotionLine}\n${deliveryLabel}: ${money(deliveryFee)}\nTotal: ${money(total)}\n\nPlease confirm availability and ${deliveryMethod==='collection'?'collection arrangements':'delivery'}.`),'_blank');
   };
 
   const yocoCheckout=async()=>{
+    const validationError=validateCustomer();
+    if(validationError){setCustomerError(validationError);return;}
     setPaying(true);
     setPaymentError('');
     try{
@@ -58,7 +79,8 @@ export default function ShoppingCart(){
         body:JSON.stringify({
           items:items.map(item=>({id:item.id,qty:item.qty})),
           deliveryMethod,
-          promotionCode:promoCode
+          promotionCode:promoCode,
+          customer:customerDetails
         })
       });
       const result=await response.json();
@@ -93,6 +115,25 @@ export default function ShoppingCart(){
             <strong>{money(0)}</strong>
           </label>
         </fieldset>
+        <section className="customer-details">
+          <h3>Customer details</h3>
+          <label>Full name<input type="text" autoComplete="name" value={customer.fullName} onChange={event=>updateCustomer('fullName',event.target.value)} required/></label>
+          <div className="customer-grid">
+            <label>Email<input type="email" autoComplete="email" value={customer.email} onChange={event=>updateCustomer('email',event.target.value)} required/></label>
+            <label>Telephone<input type="tel" autoComplete="tel" value={customer.telephone} onChange={event=>updateCustomer('telephone',event.target.value)} required/></label>
+          </div>
+          {deliveryMethod==='delivery'&&<div className="address-fields">
+            <h3>Delivery address</h3>
+            <label>Street address<input type="text" autoComplete="street-address" value={customer.addressLine1} onChange={event=>updateCustomer('addressLine1',event.target.value)} required/></label>
+            <div className="customer-grid">
+              <label>Suburb<input type="text" autoComplete="address-level3" value={customer.suburb} onChange={event=>updateCustomer('suburb',event.target.value)} required/></label>
+              <label>City<input type="text" autoComplete="address-level2" value={customer.city} onChange={event=>updateCustomer('city',event.target.value)} required/></label>
+              <label>Province<input type="text" autoComplete="address-level1" value={customer.province} onChange={event=>updateCustomer('province',event.target.value)} required/></label>
+              <label>Postal code<input type="text" inputMode="numeric" autoComplete="postal-code" value={customer.postalCode} onChange={event=>updateCustomer('postalCode',event.target.value)} required/></label>
+            </div>
+          </div>}
+          {customerError&&<p className="customer-error">{customerError}</p>}
+        </section>
         <section className="promotion">
           <b>Promotion code</b>
           <form onSubmit={applyPromotion}>
